@@ -54,9 +54,4 @@ def build_retriever():
     reranked_retriever = ContextualCompressionRetriever(
         base_compressor=compressor, base_retriever=hybrid_retriever
     )
-
-    results = reranked_retriever.invoke("What is hybrid search")
-    for doc in results:
-        print(doc.page_content)
-
     return reranked_retriever

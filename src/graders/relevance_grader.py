@@ -14,7 +14,7 @@ def build_document_grader(llm):
                     If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant.
                     Give a binary score 'yes' or 'no'.""",
             ),
-            ("human", "Retrieved document:\n{document}\n\nUser question: {question}"),
+            ("human", "Retrieved documents:\n{documents}\n\nUser question: {question}"),
         ]
     )
 

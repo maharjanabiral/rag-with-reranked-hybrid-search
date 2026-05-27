@@ -11,7 +11,9 @@ def build_rag_chain(llm):
                 """You are an assistant for question-answering tasks.
                 Use the following retrieved context to answer the question.
                 If you don't know the answer, say you don't know.
-                Keep the answer concise and grounded in the context.""",
+                Keep the answer concise and grounded in the context.
+                If you do not find any context related to the question  Briefly explain what the documents do cover and why they don't fully answer the question.
+                Also do not use your own knowledge to answer the question""",
             ),
             ("human", "Context:\n{context}\n\nQuestion: {question}"),
         ]
