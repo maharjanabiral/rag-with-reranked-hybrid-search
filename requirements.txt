@@ -1,0 +1,12 @@
+langchain
+langchain-community
+langchain-groq
+langchain-chroma
+python-dotenv
+langchain-huggingface
+sentence-transformers
+cohere
+langchain-cohere
+
+
+
