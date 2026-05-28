@@ -8,9 +8,11 @@ from rag import build_rag_chain
 from retriever import build_retriever
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
-from rewriter import build_query_rewriter
+from query_rewriter import build_query_rewriter
 
 load_dotenv()
+
+max_retries = 2
 
 
 class GraphState(TypedDict):
@@ -109,11 +111,14 @@ def decide_after_hallucination_grading(state: GraphState):
 
 
 def decide_after_answer_grading(state: GraphState):
+
     if state["answer_score"] == "useful":
         return "end"
-
-    if state["retries"] > 2:
+    if state["relevance_score"] == "irrelevant":
         return "end"
+    if state["retries"] > max_retries:
+        return "end"
+
     return "rewrite_query"
 
 
@@ -150,5 +155,5 @@ graph.add_conditional_edges(
 )
 
 app = graph.compile()
-result = app.invoke({"question": "What do you mean by Hybrid Search"})
+result = app.invoke({"question": "Who is the prime minister of nepal"})
 print(result)

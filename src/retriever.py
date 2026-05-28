@@ -1,3 +1,4 @@
+import os
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -9,6 +10,9 @@ from langchain_classic.retrievers.document_compressors import CrossEncoderRerank
 from langchain_classic.retrievers.contextual_compression import (
     ContextualCompressionRetriever,
 )
+
+
+persist_directory = "./chroma_db"
 
 
 def build_retriever():
@@ -23,6 +27,7 @@ def build_retriever():
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
         encode_kwargs={"normalize_embeddings": True},
+        cache_folder="./model_cache",
     )
 
     rerank_model = HuggingFaceCrossEncoder(
@@ -38,11 +43,18 @@ def build_retriever():
 
     chunks = splitter.split_documents(docs)
 
-    vector_store = Chroma.from_documents(
-        chunks,
-        embedding=embeddings,
-        persist_directory="./chroma_db",
-    )
+    if os.path.exists(persist_directory):
+        print("Loading vector indexes")
+        vector_store = Chroma(
+            persist_directory=persist_directory, embedding_function=embeddings
+        )
+    else:
+        print("Building new vector indexes")
+        vector_store = Chroma.from_documents(
+            chunks,
+            embedding=embeddings,
+            persist_directory="./chroma_db",
+        )
 
     vector_retriever = vector_store.as_retriever(search_kwargs={"k": 2})
     bm25_retriever = BM25Retriever.from_documents(docs)
