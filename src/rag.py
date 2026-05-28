@@ -1,8 +1,9 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from shared_llm import llm
 
 
-def build_rag_chain(llm):
+def build_rag_chain():
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -21,3 +22,6 @@ def build_rag_chain(llm):
 
     chain = prompt | llm | StrOutputParser()
     return chain
+
+
+rag_chain = build_rag_chain()

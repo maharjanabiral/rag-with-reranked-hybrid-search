@@ -1,10 +1,11 @@
 from graders.classes.grade_classes import GradeHallucinations
 from langchain_core.prompts import ChatPromptTemplate
+from shared_llm import llm
 
 
-def build_hallucination_grader(llm):
+def build_hallucination_grader():
 
-    llm = llm.with_structured_output(GradeHallucinations)
+    structured_llm = llm.with_structured_output(GradeHallucinations)
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -17,5 +18,8 @@ def build_hallucination_grader(llm):
         ]
     )
 
-    hallucination_grader = prompt | llm
+    hallucination_grader = prompt | structured_llm
     return hallucination_grader
+
+
+hallucination_grader = build_hallucination_grader()

@@ -1,10 +1,11 @@
 from graders.classes.grade_classes import GradeAnswer
 from langchain_core.prompts import ChatPromptTemplate
+from shared_llm import llm
 
 
-def build_answer_grader(llm):
+def build_answer_grader():
 
-    llm = llm.with_structured_output(GradeAnswer)
+    structured_llm = llm.with_structured_output(GradeAnswer)
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -17,5 +18,8 @@ def build_answer_grader(llm):
         ]
     )
 
-    answer_grader = prompt | llm
+    answer_grader = prompt | structured_llm
     return answer_grader
+
+
+answer_grader = build_answer_grader()

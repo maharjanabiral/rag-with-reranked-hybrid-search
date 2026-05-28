@@ -1,16 +1,13 @@
 from langchain_core.documents import Document
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, List
-from graders.answer_grader import build_answer_grader
-from graders.hallucination_grader import build_hallucination_grader
-from graders.relevance_grader import build_document_grader
-from rag import build_rag_chain
-from retriever import build_retriever
-from langchain_groq import ChatGroq
-from dotenv import load_dotenv
-from query_rewriter import build_query_rewriter
+from graders.answer_grader import answer_grader
+from graders.hallucination_grader import hallucination_grader
+from graders.relevance_grader import document_grader
+from rag import rag_chain
+from retriever import retriever
+from query_rewriter import query_rewriter
 
-load_dotenv()
 
 max_retries = 2
 
@@ -23,16 +20,6 @@ class GraphState(TypedDict):
     hallucination_score: str
     answer_score: str
     retries: int
-
-
-llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0.2)
-
-retriever = build_retriever()
-rag_chain = build_rag_chain(llm=llm)
-document_grader = build_document_grader(llm=llm)
-hallucination_grader = build_hallucination_grader(llm=llm)
-answer_grader = build_answer_grader(llm=llm)
-query_rewriter = build_query_rewriter()
 
 
 def retrieve(state: GraphState) -> dict:
@@ -155,5 +142,5 @@ graph.add_conditional_edges(
 )
 
 app = graph.compile()
-result = app.invoke({"question": "Who is the prime minister of nepal"})
+result = app.invoke({"question": "What do you mean by Hybrid Search"})
 print(result)

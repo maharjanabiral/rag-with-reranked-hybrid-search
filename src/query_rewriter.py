@@ -22,3 +22,6 @@ def build_query_rewriter():
 
     query_rewriter = prompt | llm | StrOutputParser()
     return query_rewriter
+
+
+query_rewriter = build_query_rewriter()
