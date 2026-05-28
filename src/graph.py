@@ -5,7 +5,7 @@ from graders.answer_grader import answer_grader
 from graders.hallucination_grader import hallucination_grader
 from graders.relevance_grader import document_grader
 from rag import rag_chain
-from retriever import retriever
+from retriever import get_retriever
 from query_rewriter import query_rewriter
 
 
@@ -24,7 +24,7 @@ class GraphState(TypedDict):
 
 def retrieve(state: GraphState) -> dict:
     question = state["question"]
-    docs = retriever.invoke(question)
+    docs = get_retriever().invoke(question)
     return {"documents": docs, "question": question}
 
 
@@ -141,6 +141,7 @@ graph.add_conditional_edges(
     {"end": END, "rewrite_query": "rewrite_query"},
 )
 
-app = graph.compile()
-result = app.invoke({"question": "What do you mean by Hybrid Search"})
+graph = graph.compile()
+result = graph.invoke({"question": "Explain the architecture of transformers model"})
 print(result)
+print(result["generation"])

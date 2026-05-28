@@ -11,3 +11,4 @@ wheels/
 chroma_db/
 .env
 model_cache/
+data/

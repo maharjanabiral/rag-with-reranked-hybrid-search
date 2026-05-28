@@ -16,11 +16,18 @@ embeddings = HuggingFaceEmbeddings(
     encode_kwargs={"normalize_embeddings": True},
     cache_folder="./model_cache",
 )
-rerank_model = HuggingFaceCrossEncoder(
-    model_name="cross-encoder/ms-marco-MiniLM-L-6-v2"
-)
+rerank_model = HuggingFaceCrossEncoder(model_name="cross-encoder/nli-deberta-v3-small")
 
-compressor = CrossEncoderReranker(model=rerank_model, top_n=3)
+compressor = CrossEncoderReranker(model=rerank_model, top_n=5)
+
+_retriever = None
+
+
+def get_retriever():
+    global _retriever
+    if _retriever is None:
+        _retriever = build_retriever()
+    return _retriever
 
 
 def build_retriever():
@@ -34,17 +41,15 @@ def build_retriever():
         for text, meta in zip(raw_docs["documents"], raw_docs["metadatas"])
     ]
 
-    vector_retriever = vector_store.as_retriever(search_kwargs={"k": 2})
+    vector_retriever = vector_store.as_retriever(search_kwargs={"k": 5})
     bm25_retriever = BM25Retriever.from_documents(docs)
+    bm25_retriever.k = 5
 
     hybrid_retriever = EnsembleRetriever(
-        retrievers=[vector_retriever, bm25_retriever], weights=[0.5, 0.5]
+        retrievers=[vector_retriever, bm25_retriever], weights=[0.6, 0.4]
     )
 
     reranked_retriever = ContextualCompressionRetriever(
         base_compressor=compressor, base_retriever=hybrid_retriever
     )
     return reranked_retriever
-
-
-retriever = build_retriever()
