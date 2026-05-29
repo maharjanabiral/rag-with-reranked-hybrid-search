@@ -41,9 +41,9 @@ def build_retriever():
         for text, meta in zip(raw_docs["documents"], raw_docs["metadatas"])
     ]
 
-    vector_retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+    vector_retriever = vector_store.as_retriever(search_kwargs={"k": 8})
     bm25_retriever = BM25Retriever.from_documents(docs)
-    bm25_retriever.k = 5
+    bm25_retriever.k = 8
 
     hybrid_retriever = EnsembleRetriever(
         retrievers=[vector_retriever, bm25_retriever], weights=[0.6, 0.4]

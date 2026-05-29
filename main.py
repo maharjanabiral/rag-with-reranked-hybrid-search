@@ -1,45 +1,77 @@
-from src.ingestion import ingest
-from src.graph import graph
-import sys
-
-from src.retriever import get_retriever
-
-
-def run_query(question: str):
-    result = graph.invoke(
-        {
-            "question": question,
-            "generation": "",
-            "documents": [],
-            "relevance_score": "",
-            "hallucination_score": "",
-            "answer_score": "",
-            "retries": 0,
-        }
-    )
-    print(result)
-    print(result["generation"])
+from typing import List
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
 
-def run_debug(question: str):
-
-    docs = get_retriever().invoke(question)
-    print(f"Retrieved {len(docs)} docs:")
-    for i, doc in enumerate(docs):
-        print(f"\n--- Doc {i + 1} ---")
-        print(f"Source: {doc.metadata.get('source', 'unknown')}")
-        print(f"Content: {doc.page_content}")
+app_state = {}
 
 
-if __name__ == "__main__":
-    import sys
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from src.graph import graph
 
-    if len(sys.argv) < 2:
-        print("Usage: uv run main.py ingest | query '<question>'")
-        sys.exit(1)
+    app_state["graph"] = graph
+    yield
+    app_state.clear()
 
-    command = sys.argv[1]
-    if command == "query":
-        run_query(sys.argv[2])
-    elif command == "debug":
-        run_debug(sys.argv[2])
+
+app = FastAPI(lifespan=lifespan)
+
+
+class DocResponse(BaseModel):
+    source: str
+    content: str
+
+
+class QueryRequest(BaseModel):
+    question: str
+
+
+class QueryResponse(BaseModel):
+    generation: str
+    relevance_score: str
+    hallucination_score: str
+    answer_score: str
+    retries: int
+    docs: List[DocResponse] = []
+
+
+@app.post("/chat")
+async def query(request: QueryRequest):
+    try:
+        result = app_state["graph"].invoke(
+            {
+                "question": request.question,
+                "generation": "",
+                "documents": [],
+                "relevance_score": "",
+                "hallucination_score": "",
+                "answer_score": "",
+                "retries": 0,
+            }
+        )
+
+        response = QueryResponse(
+            generation=result["generation"],
+            documents=result["documents"],
+            relevance_score=result["relevance_score"],
+            hallucination_score=result["hallucination_score"],
+            answer_score=result["answer_score"],
+            retries=result["retries"],
+            docs=[
+                DocResponse(
+                    source=doc.metadata.get("source", "unknown"),
+                    content=doc.page_content,
+                )
+                for doc in result["documents"]
+            ],
+        )
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health")
+def check_health():
+    return {"status": "Server is healthy"}

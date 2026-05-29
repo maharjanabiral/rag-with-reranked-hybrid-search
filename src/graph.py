@@ -103,7 +103,7 @@ def decide_after_answer_grading(state: GraphState):
         return "end"
     if state["relevance_score"] == "irrelevant":
         return "end"
-    if state["retries"] > max_retries:
+    if state.get("retries", 0) > max_retries:
         return "end"
 
     return "rewrite_query"
@@ -142,6 +142,10 @@ graph.add_conditional_edges(
 )
 
 graph = graph.compile()
-result = graph.invoke({"question": "Explain the architecture of transformers model"})
-print(result)
-print(result["generation"])
+# result = graph.invoke(
+#     {
+#         "question": "What was the annual average consumer price of inflation in 2024/25 and compare it to other year"
+#     }
+# )
+# print(result)
+# print(result["generation"])
